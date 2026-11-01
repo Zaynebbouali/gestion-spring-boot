@@ -1,151 +1,246 @@
-# Module Paiements & Avis
+# GestionReservation
 
-## 1. Contexte
+API REST de gestion d'événements et de réservations, développée avec **Spring Boot**.
+Elle permet de gérer les catégories, les salles, les utilisateurs, les intervenants (speakers),
+les événements et les réservations de places.
 
-Ce module fait partie de l'application de gestion d'événements (Spring Boot 3, Spring Data JPA).
-Il gère :
+## Technologies
 
-- **le paiement** d'une réservation (un paiement par réservation) ;
-- **les avis** laissés par les utilisateurs sur les événements auxquels ils ont participé ;
-- des **statistiques** de notes (note moyenne par événement, classement par catégorie).
+- Java 27 (à adapter dans `pom.xml` selon votre JDK, Java 17 minimum)
+- Spring Boot 4.1.2 (Spring Web MVC, Spring Data JPA)
+- Hibernate / JPA
+- MySQL (production) ou H2 en mémoire (tests rapides)
+- Maven (wrapper `mvnw` inclus)
+- Postman pour tester l'API
 
-## 2. Entités
-
-### Payment
-
-| Champ         | Type            | Description                                   |
-|---------------|-----------------|-----------------------------------------------|
-| id            | Long            | Identifiant (auto-incrément)                  |
-| amount        | BigDecimal      | Montant payé (> 0)                            |
-| method        | PaymentMethod   | `CARTE`, `ESPECES`, `VIREMENT`, `D17`         |
-| status        | PaymentStatus   | `EN_ATTENTE`, `PAYE`, `ECHOUE`, `REMBOURSE`   |
-| paymentDate   | LocalDateTime   | Date du paiement (auto à la création)         |
-| reservation   | Reservation     | **OneToOne** – FK `reservation_id` unique     |
-
-### Review
-
-| Champ     | Type          | Description                                  |
-|-----------|---------------|----------------------------------------------|
-| id        | Long          | Identifiant                                  |
-| rating    | Integer       | Note de 1 à 5                                |
-| comment   | String        | Commentaire (max 1000 caractères)            |
-| createdAt | LocalDateTime | Date de création (auto)                      |
-| user      | User          | **ManyToOne** – auteur de l'avis             |
-| event     | Event         | **ManyToOne** – événement évalué             |
-
-Contrainte unique `(user_id, event_id)` : un utilisateur ne donne qu'un avis par événement.
-
-### Relations
+## Structure du projet
 
 ```
-Reservation 1 ──── 1 Payment
-User        1 ──── * Review * ──── 1 Event
+src/main/java/com/example/demo
+├── Entity/        Category, Venue, User, Speaker, Event, Reservation
+├── repository/    interfaces JpaRepository + requêtes personnalisées
+├── service/       logique métier et règles de gestion
+├── controller/    endpoints REST (/api/...)
+└── exception/     gestion des erreurs (404, 400, 409)
 ```
 
-## 3. Règles métier
+## Prérequis
 
-1. **Un avis seulement après participation** : l'utilisateur doit avoir une réservation dont le
-   paiement est au statut `PAYE` (réservation non annulée), et l'événement doit avoir commencé. Sinon → `400 Bad Request`.
-2. Un seul avis par utilisateur et par événement.
-3. Une réservation ne peut avoir qu'un seul paiement, et une réservation `CANCELLED` ne peut pas être payée.
-4. L'auteur et l'événement d'un avis ne sont pas modifiables (seuls note et commentaire).
+- JDK installé (`java -version`) correspondant à `<java.version>` du `pom.xml`
+- MySQL démarré (sauf si vous utilisez H2)
 
-## 4. Endpoints
+## Configuration
 
-Base URL : `http://localhost:8080`
+Le fichier `src/main/resources/application.properties` est à adapter.
 
-### Paiements – `/api/payments`
+### Option 1 : MySQL
 
-| Méthode | URL                                   | Description                    |
-|---------|---------------------------------------|--------------------------------|
-| POST    | `/api/payments`                       | Créer un paiement              |
-| GET     | `/api/payments`                       | Lister les paiements           |
-| GET     | `/api/payments/{id}`                  | Détail d'un paiement           |
-| GET     | `/api/payments/reservation/{resId}`   | Paiement d'une réservation     |
-| PUT     | `/api/payments/{id}`                  | Modifier un paiement           |
-| DELETE  | `/api/payments/{id}`                  | Supprimer un paiement          |
+```properties
+spring.application.name=GestionReservation
 
-Exemple de corps :
+spring.datasource.url=jdbc:mysql://localhost:3306/gestionreservation?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+spring.datasource.username=root
+spring.datasource.password=VOTRE_MOT_DE_PASSE
+
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+
+server.port=8081
+```
+
+La base `gestionreservation` est créée automatiquement. Les tables sont générées par Hibernate.
+
+### Option 2 : H2 en mémoire (aucun mot de passe)
+
+```properties
+spring.application.name=GestionReservation
+
+spring.datasource.url=jdbc:h2:mem:gestionreservation;DB_CLOSE_DELAY=-1
+spring.datasource.username=sa
+spring.datasource.password=
+spring.datasource.driver-class-name=org.h2.Driver
+
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+
+server.port=8081
+```
+
+Les données sont perdues à chaque redémarrage.
+
+> Ne publiez pas votre vrai mot de passe MySQL sur un dépôt public.
+
+## Lancer l'application
+
+```bash
+# Windows
+mvnw.cmd spring-boot:run
+
+# Linux / macOS
+./mvnw spring-boot:run
+```
+
+Ou depuis Spring Tool Suite : clic droit sur `GestionReservationApplication.java`
+→ **Run As** → **Spring Boot App**.
+
+L'application est prête quand la console affiche :
+
+```
+Tomcat started on port 8081
+Started GestionReservationApplication
+```
+
+URL de base : `http://localhost:8081`
+
+## Endpoints
+
+### Catégories : `/api/categories`
+
+| Méthode | URL | Description |
+|---|---|---|
+| POST | `/api/categories` | Créer une catégorie |
+| GET | `/api/categories` | Lister |
+| GET | `/api/categories/{id}` | Détail |
+| PUT | `/api/categories/{id}` | Modifier |
+| DELETE | `/api/categories/{id}` | Supprimer |
+
+### Salles : `/api/venues`
+
+| Méthode | URL | Description |
+|---|---|---|
+| POST | `/api/venues` | Créer une salle |
+| GET | `/api/venues` | Lister |
+| GET | `/api/venues/{id}` | Détail |
+| PUT | `/api/venues/{id}` | Modifier |
+| DELETE | `/api/venues/{id}` | Supprimer |
+| GET | `/api/venues/search?city=Tunis&capacity=50` | Salles d'une ville avec capacité minimale |
+
+### Utilisateurs : `/api/users`
+
+| Méthode | URL | Description |
+|---|---|---|
+| POST | `/api/users` | Créer (201), email unique |
+| GET | `/api/users` | Lister |
+| GET | `/api/users/{id}` | Détail |
+| PUT | `/api/users/{id}` | Modifier |
+| DELETE | `/api/users/{id}` | Supprimer (204) |
+
+### Speakers : `/api/speakers`
+
+| Méthode | URL | Description |
+|---|---|---|
+| POST | `/api/speakers` | Créer |
+| GET | `/api/speakers` | Lister |
+| GET | `/api/speakers/{id}` | Détail |
+| PUT | `/api/speakers/{id}` | Modifier |
+| DELETE | `/api/speakers/{id}` | Supprimer |
+
+### Événements : `/api/events`
+
+| Méthode | URL | Description |
+|---|---|---|
+| POST | `/api/events` | Créer un événement |
+| GET | `/api/events` | Lister |
+| GET | `/api/events/{id}` | Détail |
+| PUT | `/api/events/{id}` | Modifier (corps complet) |
+| DELETE | `/api/events/{id}` | Supprimer |
+| GET | `/api/events/a-venir?city=Tunis` | Événements à venir dans une ville |
+| POST | `/api/events/{eventId}/speakers/{speakerId}` | Ajouter un speaker à un événement |
+
+### Réservations : `/api/reservations`
+
+| Méthode | URL | Description |
+|---|---|---|
+| POST | `/api/reservations` | Réserver des places (201) |
+| GET | `/api/reservations` | Lister |
+| GET | `/api/reservations/{id}` | Détail |
+| PUT | `/api/reservations/{id}` | Modifier places et statut |
+| DELETE | `/api/reservations/{id}` | Supprimer (204) |
+| GET | `/api/reservations/event/{eventId}/remaining-seats` | Places restantes |
+| GET | `/api/reservations/search?userId=1&start=2026-01-01T00:00:00&end=2027-12-31T23:59:59` | Réservations d'un utilisateur sur une période |
+
+## Exemples de corps JSON
+
+**Créer un événement** (`POST /api/events`) :
 
 ```json
-{ "amount": 120.0, "method": "CARTE", "status": "PAYE", "reservationId": 1 }
+{
+  "title": "Spring Boot Day",
+  "description": "Journée de démonstration",
+  "startDate": "2027-01-15T10:00:00",
+  "endDate": "2027-01-15T12:00:00",
+  "capacity": 50,
+  "category": { "id": 1 },
+  "venue": { "id": 1 },
+  "organizer": { "id": 1 },
+  "speakers": [ { "id": 1 } ]
+}
 ```
 
-### Avis – `/api/reviews`
-
-| Méthode | URL                              | Description                  |
-|---------|----------------------------------|------------------------------|
-| POST    | `/api/reviews`                   | Créer un avis                |
-| GET     | `/api/reviews`                   | Lister les avis              |
-| GET     | `/api/reviews/{id}`              | Détail d'un avis             |
-| GET     | `/api/reviews/event/{eventId}`   | Avis d'un événement          |
-| GET     | `/api/reviews/user/{userId}`     | Avis d'un utilisateur        |
-| PUT     | `/api/reviews/{id}`              | Modifier un avis             |
-| DELETE  | `/api/reviews/{id}`              | Supprimer un avis            |
+**Créer une réservation** (`POST /api/reservations`) :
 
 ```json
-{ "rating": 5, "comment": "Super événement !", "userId": 1, "eventId": 1 }
+{
+  "userId": 1,
+  "eventId": 1,
+  "seats": 2
+}
 ```
 
-### Requêtes personnalisées
-
-| Méthode | URL                                        | Description                                         |
-|---------|--------------------------------------------|-----------------------------------------------------|
-| GET     | `/api/reviews/stats/category/{categoryId}` | Événements d'une catégorie triés par note moyenne   |
-| GET     | `/api/reviews/stats/event/{eventId}`       | Note moyenne d'un événement                         |
-| GET     | `/api/reviews/stats/events`                | Note moyenne de tous les événements notés           |
-
-Réponse :
+**Modifier une réservation** (`PUT /api/reservations/{id}`) :
 
 ```json
-[
-  { "eventId": 3, "eventTitle": "Festival Jazz", "averageRating": 4.67, "reviewCount": 3 },
-  { "eventId": 1, "eventTitle": "Conférence IA",  "averageRating": 4.0,  "reviewCount": 2 }
-]
+{
+  "seats": 3,
+  "status": "CONFIRMED"
+}
 ```
 
-## 5. Structure
+Statuts possibles : `PENDING`, `CONFIRMED`, `CANCELLED`.
 
+> Les noms des champs sont sensibles à la casse : `userId` et `eventId`, pas `userID`.
+
+## Règles de gestion
+
+- La salle (`venue`) est obligatoire pour créer un événement.
+- La date de fin doit être après la date de début.
+- La capacité de l'événement doit être supérieure à 0 et ne pas dépasser celle de la salle.
+- Une réservation est refusée (409) si le nombre de places demandé dépasse les places restantes.
+- Les réservations annulées (`CANCELLED`) ne comptent pas dans les places occupées.
+- L'email d'un utilisateur est unique (409 si déjà utilisé).
+
+## Codes d'erreur
+
+| Code | Signification |
+|---|---|
+| 200 / 201 / 204 | Succès |
+| 400 | Règle métier non respectée ou données invalides |
+| 404 | Ressource introuvable |
+| 409 | Plus de places disponibles, ou email déjà utilisé |
+
+Pour afficher le message détaillé dans les erreurs, ajoutez dans `application.properties` :
+
+```properties
+server.error.include-message=always
 ```
-src/main/java/com/example/demo/
-├── controller/   PaymentController, ReviewController
-├── dto/          PaymentRequest/Response, ReviewRequest/Response, EventRatingDTO
-├── Entity/       Payment, Review, enums/PaymentMethod, enums/PaymentStatus
-├── exception/    ResourceNotFoundException, BusinessException
-├── repository/   PaymentRepository, ReviewRepository
-└── service/      PaymentService, ReviewService
-postman/          Paiements-Avis.postman_collection.json
-docs/captures/    Captures d'écran Postman
-```
 
-## 6. Instructions
+## Tester avec Postman
 
-1. **Prérequis** : Java 17+, Maven, base de données configurée dans `application.properties`.
-2. Dépendances nécessaires dans `pom.xml` : `spring-boot-starter-web`, `spring-boot-starter-data-jpa`,
-   driver SQL. (La validation des données est faite dans les services, sans dépendance supplémentaire.)
-3. Le module s'appuie sur les entités existantes `User`, `Event`, `Reservation`, `Category` et leurs repositories.
-   Champs utilisés : `Event.title`, `Event.category`, `Event.startDate`, `Reservation.user`,
-   `Reservation.event`, `Reservation.status`.
-4. (Optionnel) côté `Reservation`, relation bidirectionnelle :
-   ```java
-   @OneToOne(mappedBy = "reservation", cascade = CascadeType.ALL, orphanRemoval = true)
-   @JsonIgnore
-   private Payment payment;
-   ```
-5. Lancer : `mvn spring-boot:run`
-6. **Postman** : *Import* → `postman/Paiements-Avis.postman_collection.json`. La variable `baseUrl`
-   vaut `http://localhost:8080`. Ordre de test conseillé : créer un paiement `PAYE` → créer un avis →
-   statistiques → tester la règle métier (avis sans participation → 400).
+1. Ouvrir Postman → **Import** → choisir `GestionReservation.postman_collection.json`.
+2. Vérifier la variable `baseUrl` de la collection (par défaut `http://localhost:8081`).
+3. Clic sur les `...` de la collection → **Run collection** → **Run**.
 
-## 7. Captures Postman
+La collection crée les données de test (catégorie, salle, utilisateur, speaker, événement),
+puis teste les réservations et quelques cas d'erreur (409, 400, 404).
 
-| Test | Capture |
-|------|---------|
-| Créer un paiement | ![](docs/captures/01-create-payment.png) |
-| Lister les paiements | ![](docs/captures/02-list-payments.png) |
-| Créer un avis | ![](docs/captures/03-create-review.png) |
-| Avis refusé (règle métier) | ![](docs/captures/04-review-refused.png) |
-| Événements d'une catégorie triés par note | ![](docs/captures/05-category-ranking.png) |
-| Note moyenne d'un événement | ![](docs/captures/06-event-average.png) |
+## Problèmes fréquents
 
-> Placez vos captures dans `docs/captures/` avec ces noms de fichiers.
+| Problème | Cause et solution |
+|---|---|
+| `Access denied for user 'root'` | Mauvais mot de passe MySQL dans `application.properties` |
+| `Unknown database` | Ajouter `createDatabaseIfNotExist=true` à l'URL JDBC |
+| `Port 8081 was already in use` | Une autre instance tourne : l'arrêter (carré rouge de la console) ou changer `server.port` |
+| `release version 27 not supported` | Mettre dans `pom.xml` un `<java.version>` égal ou inférieur à votre JDK |
+| Postman : `Request failed` | L'application n'est pas démarrée |
+| `404` sur `/api/reservations` | Ancienne instance encore active, ou user / event inexistants |
