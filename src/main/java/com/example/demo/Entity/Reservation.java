@@ -1,6 +1,5 @@
 package com.example.demo.Entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
@@ -31,11 +30,6 @@ public class Reservation {
     @JoinColumn(name = "event_id")
     private Event event;
 
-    // Entité du Membre 4 : Payment porte la clé étrangère (champ "reservation")
-    @JsonIgnore
-    @OneToOne(mappedBy = "reservation", cascade = CascadeType.ALL)
-    private Payment payment;
-
     public Reservation() {
     }
 
@@ -56,7 +50,4 @@ public class Reservation {
 
     public Event getEvent() { return event; }
     public void setEvent(Event event) { this.event = event; }
-
-    public Payment getPayment() { return payment; }
-    public void setPayment(Payment payment) { this.payment = payment; }
 }
