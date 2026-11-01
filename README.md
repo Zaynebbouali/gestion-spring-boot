@@ -204,7 +204,7 @@ Une collection Postman est utilisée pour tester les différentes fonctionnalit�
 ### 1. Cloner le projet
 
 ```bash
-git clone URL_DU_REPOSITORY
+git clone https://github.com/Zaynebbouali/gestion-spring-boot.git
 ```
 
 ### 2. Ouvrir le projet
@@ -238,7 +238,7 @@ GestionReservationApplication.java
 L'application démarre généralement sur :
 
 ```text
-http://localhost:8080
+http://localhost:8081
 ```
 
 ---
