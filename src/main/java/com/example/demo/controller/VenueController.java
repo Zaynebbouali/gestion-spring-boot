@@ -2,7 +2,16 @@ package com.example.demo.controller;
 
 import java.util.List;
 
-import org.springframework.web.bind.annotation.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.Entity.Venue;
 import com.example.demo.service.VenueService;
@@ -11,47 +20,37 @@ import com.example.demo.service.VenueService;
 @RequestMapping("/api/venues")
 public class VenueController {
 
-    private final VenueService venueService;
+    @Autowired
+    private VenueService venueService;
 
-    public VenueController(VenueService venueService) {
-        this.venueService = venueService;
-    }
-
-    // CREATE
     @PostMapping
-    public Venue createVenue(@RequestBody Venue venue) {
-        return venueService.createVenue(venue);
+    public Venue ajouterVenue(@RequestBody Venue venue) {
+        return venueService.ajouterVenue(venue);
     }
 
-    // READ ALL
     @GetMapping
     public List<Venue> getAllVenues() {
         return venueService.getAllVenues();
     }
 
-    // READ BY ID
     @GetMapping("/{id}")
     public Venue getVenueById(@PathVariable Long id) {
-        return venueService.getVenueById(id);
+        return venueService.trouverVenueParId(id);
     }
 
-    // UPDATE
     @PutMapping("/{id}")
-    public Venue updateVenue(@PathVariable Long id, @RequestBody Venue venueDetails) {
-        return venueService.updateVenue(id, venueDetails);
+    public Venue modifierVenue(@PathVariable Long id, @RequestBody Venue venueDetails) {
+        return venueService.modifierVenue(id, venueDetails);
     }
 
-    // DELETE
     @DeleteMapping("/{id}")
-    public Long deleteVenue(@PathVariable Long id) {
-        return venueService.deleteVenue(id);
+    public Long supprimerVenue(@PathVariable Long id) {
+        return venueService.supprimerVenue(id);
     }
 
-    // SEARCH BY CITY AND MINIMUM CAPACITY
     @GetMapping("/search")
-    public List<Venue> searchVenues(
-            @RequestParam String city,
-            @RequestParam Integer capacity) {
+    public List<Venue> searchVenues(@RequestParam String city,
+                                    @RequestParam Integer capacity) {
         return venueService.searchVenues(city, capacity);
     }
 }

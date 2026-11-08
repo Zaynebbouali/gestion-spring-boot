@@ -20,23 +20,20 @@ public class SpeakerService {
 	@Autowired
 	private EventRepository eventRepository;
 
-	// CREATE
+	
 	public Speaker creerSpeaker(Speaker speaker) {
 		return speakerRepository.save(speaker);
 	}
 
-	// READ ALL
 	public List<Speaker> listerSpeakers() {
 		return speakerRepository.findAll();
 	}
 
-	// READ BY ID
 	public Speaker trouverSpeakerParId(Long id) {
 		return speakerRepository.findById(id)
 				.orElseThrow(() -> new IllegalArgumentException("Speaker non trouvé"));
 	}
 
-	// UPDATE
 	public Speaker mettreAJourSpeaker(Long id, Speaker details) {
 		Speaker speaker = trouverSpeakerParId(id);
 		speaker.setName(details.getName());
@@ -45,7 +42,6 @@ public class SpeakerService {
 		return speakerRepository.save(speaker);
 	}
 
-	// DELETE : on détache d'abord le speaker de ses événements (table event_speakers)
 	@Transactional
 	public Long supprimerSpeaker(Long id) {
 		Speaker speaker = trouverSpeakerParId(id);
