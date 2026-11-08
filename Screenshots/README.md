@@ -4,7 +4,7 @@ Screenshots - GestionReservation
  1. Gestion des catégories
 Cette capture montre la récupération de la liste des catégories.
 
-("C:\Users\boual\Documents\workspace-spring-tools-for-eclipse-5.4.0.RELEASE\GestionReservation\Screenshots\categories.png")
+![Categories](categories.png)
 
 2. Gestion des utilisateurs
 Cette capture montre la récupération de la liste des utilisateurs.
