@@ -28,10 +28,8 @@ public class ReservationController {
     @Autowired
     private ReservationService reservationService;
 
-    // Corps JSON : {"userId":1,"eventId":2,"seats":3}
     public record CreateRequest(Long userId, Long eventId, int seats) { }
 
-    // Corps JSON : {"seats":2,"status":"CONFIRMED"}
     public record UpdateRequest(int seats, Reservation.ReservationStatus status) { }
 
     @PostMapping
@@ -67,7 +65,6 @@ public class ReservationController {
         return Map.of("remainingSeats", reservationService.placesRestantes(eventId));
     }
 
-    // Ex : /api/reservations/search?userId=1&start=2026-01-01T00:00:00&end=2026-12-31T23:59:59
     @GetMapping("/search")
     public List<Reservation> rechercherParUtilisateurEtPeriode(
             @RequestParam Long userId,

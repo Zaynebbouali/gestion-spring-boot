@@ -11,11 +11,11 @@ import java.util.List;
 
 public interface ReservationRepository extends JpaRepository<Reservation, Long> {
 
-    // Requête 1 : calculer les places réservées
+    // Req 1 : calculer les places réservées
     @Query("SELECT SUM(r.seats) FROM Reservation r WHERE r.event.id = :eventId AND r.status <> 'CANCELLED'")
     Long countReservedSeats(@Param("eventId") Long eventId);
 
-    // Requête 2 : chercher les réservations par utilisateur et période
+    // Req: chercher les réservations par utilisateur et période
     @Query("SELECT r FROM Reservation r WHERE r.user.id = :userId AND r.reservationDate BETWEEN :start AND :end")
     List<Reservation> findByUserAndPeriod(
             @Param("userId") Long userId,

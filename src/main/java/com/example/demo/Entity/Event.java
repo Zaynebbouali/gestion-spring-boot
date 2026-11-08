@@ -44,7 +44,6 @@ public class Event {
     @JoinColumn(name = "organizer_id")
     private User organizer;
 
-    // côté propriétaire de la relation ManyToMany
     @ManyToMany
     @JoinTable(
         name = "event_speakers",

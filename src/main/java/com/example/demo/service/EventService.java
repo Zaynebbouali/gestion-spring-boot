@@ -36,25 +36,22 @@ public class EventService {
 	@Autowired
 	private UserRepository userRepository;
 
-	// CREATE
 	public Event creerEvent(Event event) {
 		remplirRelations(event);
 		verifierReglesMetier(event);
 		return eventRepository.save(event);
 	}
 
-	// READ ALL
 	public List<Event> listerEvents() {
 		return eventRepository.findAll();
 	}
 
-	// READ BY ID
 	public Event trouverEventParId(Long id) {
 		return eventRepository.findById(id)
 				.orElseThrow(() -> new IllegalArgumentException("Event non trouvé"));
 	}
 
-	// UPDATE
+	
 	public Event mettreAJourEvent(Long id, Event details) {
 		Event event = trouverEventParId(id);
 		event.setTitle(details.getTitle());
@@ -72,7 +69,6 @@ public class EventService {
 		return eventRepository.save(event);
 	}
 
-	// DELETE
 	public Long supprimerEvent(Long id) {
 		Event event = trouverEventParId(id);
 		eventRepository.delete(event);
@@ -97,9 +93,7 @@ public class EventService {
 		return eventRepository.trouverEvenementsAVenirParVille(city, LocalDateTime.now());
 	}
 
-	// ---------- Méthodes privées ----------
 
-	// Le JSON ne contient que {"id": X} pour category / venue / organizer / speakers :
 	// on recharge les vrais objets depuis la base.
 	private void remplirRelations(Event event) {
 		if (event.getVenue() == null || event.getVenue().getId() == null) {

@@ -27,7 +27,6 @@ public class Speaker {
     @Column(length = 1000)
     private String bio;
 
-    // Côté inverse de la relation ManyToMany (Event est le côté propriétaire)
     @JsonIgnore
     @ManyToMany(mappedBy = "speakers")
     private List<Event> events = new ArrayList<>();

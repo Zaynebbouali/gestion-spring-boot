@@ -16,6 +16,4 @@ public interface EventRepository extends JpaRepository<Event, Long> {
 	List<Event> trouverEvenementsAVenirParVille(@Param("city") String city,
 			@Param("maintenant") LocalDateTime maintenant);
 
-	// Requête perso 2 (top 5 réservés) : à ajouter quand l'entité Reservation existe
-	// (voir le guide, étape 9)
 }
