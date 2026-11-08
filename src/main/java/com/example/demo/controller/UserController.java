@@ -18,29 +18,29 @@ public class UserController {
     }
 
     @GetMapping
-    public List<User> getAll() {
+    public List<User> listerUsers() {
         return userService.findAll();
     }
 
     @GetMapping("/{id}")
-    public User getById(@PathVariable Long id) {
+    public User afficherUser(@PathVariable Long id) {
         return userService.findById(id);
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public User create(@RequestBody User user) {
+    public User ajouterUser(@RequestBody User user) {
         return userService.create(user);
     }
 
     @PutMapping("/{id}")
-    public User update(@PathVariable Long id, @RequestBody User user) {
+    public User modifierUser(@PathVariable Long id, @RequestBody User user) {
         return userService.update(id, user);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable Long id) {
+    public void supprimerUser(@PathVariable Long id) {
         userService.delete(id);
     }
 }

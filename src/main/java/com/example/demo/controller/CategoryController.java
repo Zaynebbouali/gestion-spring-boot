@@ -16,35 +16,35 @@ public class CategoryController {
         this.categoryService = categoryService;
     }
 
-    // CREATE
+    // AJOUTER
     @PostMapping
-    public Category createCategory(@RequestBody Category category) {
+    public Category ajouterCategory(@RequestBody Category category) {
         return categoryService.createCategory(category);
     }
 
-    // GET ALL
+    // LISTER
     @GetMapping
-    public List<Category> getAllCategories() {
+    public List<Category> listerCategories() {
         return categoryService.getAllCategories();
     }
 
-    // GET BY ID
+    // AFFICHER UNE CATEGORIE
     @GetMapping("/{id}")
-    public Category getCategoryById(@PathVariable Long id) {
+    public Category afficherCategory(@PathVariable Long id) {
         return categoryService.getCategoryById(id);
     }
 
-    // UPDATE
+    // MODIFIER
     @PutMapping("/{id}")
-    public Category updateCategory(
+    public Category modifierCategory(
             @PathVariable Long id,
             @RequestBody Category categoryDetails) {
         return categoryService.updateCategory(id, categoryDetails);
     }
 
-    // DELETE
+    // SUPPRIMER
     @DeleteMapping("/{id}")
-    public Long deleteCategory(@PathVariable Long id) {
+    public Long supprimerCategory(@PathVariable Long id) {
         return categoryService.deleteCategory(id);
     }
 }

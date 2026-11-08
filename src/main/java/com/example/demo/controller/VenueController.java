@@ -17,39 +17,39 @@ public class VenueController {
         this.venueService = venueService;
     }
 
-    // CREATE
+    // AJOUTER
     @PostMapping
-    public Venue createVenue(@RequestBody Venue venue) {
+    public Venue ajouterVenue(@RequestBody Venue venue) {
         return venueService.createVenue(venue);
     }
 
-    // READ ALL
+    // LISTER
     @GetMapping
-    public List<Venue> getAllVenues() {
+    public List<Venue> listerVenues() {
         return venueService.getAllVenues();
     }
 
-    // READ BY ID
+    // AFFICHER UNE SALLE
     @GetMapping("/{id}")
-    public Venue getVenueById(@PathVariable Long id) {
+    public Venue afficherVenue(@PathVariable Long id) {
         return venueService.getVenueById(id);
     }
 
-    // UPDATE
+    // MODIFIER
     @PutMapping("/{id}")
-    public Venue updateVenue(@PathVariable Long id, @RequestBody Venue venueDetails) {
+    public Venue modifierVenue(@PathVariable Long id, @RequestBody Venue venueDetails) {
         return venueService.updateVenue(id, venueDetails);
     }
 
-    // DELETE
+    // SUPPRIMER
     @DeleteMapping("/{id}")
-    public Long deleteVenue(@PathVariable Long id) {
+    public Long supprimerVenue(@PathVariable Long id) {
         return venueService.deleteVenue(id);
     }
 
-    // SEARCH BY CITY AND MINIMUM CAPACITY
+    // RECHERCHER PAR VILLE ET CAPACITE MINIMALE
     @GetMapping("/search")
-    public List<Venue> searchVenues(
+    public List<Venue> rechercherVenues(
             @RequestParam String city,
             @RequestParam Integer capacity) {
         return venueService.searchVenues(city, capacity);
